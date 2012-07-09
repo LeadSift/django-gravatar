@@ -4,7 +4,7 @@ from django import template
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.hashcompat import md5_constructor
-from django.utils.html import escape
+from django.utils.html import smart_urlquote
 from django.utils import simplejson
 
 GRAVATAR_URL_PREFIX = getattr(settings, "GRAVATAR_URL_PREFIX",
@@ -25,7 +25,7 @@ def _imgclass_attr():
 
 def _wrap_img_tag(url, info, size):
     return '<img src="%s"%s alt="Avatar for %s" height="%s" width="%s"/>' % \
-            (escape(url), _imgclass_attr(), info, size, size)
+            (smart_urlquote(url), _imgclass_attr(), info, size, size)
 
 
 def _get_user(user):
@@ -66,7 +66,7 @@ def gravatar_for_email(email, size=None, rating=None):
     if parameters:
         gravatar_url += '?' + urllib.urlencode(parameters, doseq=True)
 
-    return escape(gravatar_url)
+    return smart_urlquote(gravatar_url)
 
 
 @register.simple_tag
