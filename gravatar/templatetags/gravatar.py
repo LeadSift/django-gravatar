@@ -38,7 +38,7 @@ def _get_user(user):
 
 
 def _get_gravatar_id(email):
-    return md5_constructor(email).hexdigest()
+    return md5_constructor(email.strip().lower()).hexdigest()
 
 
 @register.simple_tag
