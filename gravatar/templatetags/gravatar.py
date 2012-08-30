@@ -88,6 +88,43 @@ def gravatar_for_user(user, size=None, rating=None):
 
 
 @register.simple_tag
+def gravatar_retina_img_for_email(email, size=None, rating=None):
+    """
+    Generates a Gravatar high dpi (retina) img for the given
+    email address.
+
+    Syntax::
+
+        {% gravatar_retina_img_for_email <email> [size] [rating] %}
+
+    Example::
+
+        {% gravatar_retina_img_for_email someone@example.com 48 pg %}
+    """
+    gravatar_url = gravatar_for_email(email, size*2, rating)
+    return _wrap_img_tag(gravatar_url, email, size)
+
+
+@register.simple_tag
+def gravatar_retina_img_for_user(user, size=None, rating=None):
+    """
+    Generates a Gravatar high dpi (retina) img for the given user
+    object or username.
+
+    Syntax::
+
+        {% gravatar_retina_img_for_user <user> [size] [rating] %}
+
+    Example::
+
+        {% gravatar_retina_img_for_user request.user 48 pg %}
+        {% gravatar_retina_img_for_user 'jtauber' 48 pg %}
+    """
+    gravatar_url = gravatar_for_user(user, size*2, rating)
+    return _wrap_img_tag(gravatar_url, user.username, size)
+
+
+@register.simple_tag
 def gravatar_img_for_email(email, size=None, rating=None):
     """
     Generates a Gravatar img for the given email address.
