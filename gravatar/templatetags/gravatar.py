@@ -40,6 +40,20 @@ def _get_user(user):
 def _get_gravatar_id(email):
     return md5_constructor(email).hexdigest()
 
+@register.simple_tag
+def gravatar_id_for_email(email):
+    """
+    Generates a Gravatar id from email
+    """
+    return _get_gravatar_id(email)
+
+@register.simple_tag
+def gravatar_id_for_user(user):
+    """
+    Generates a Gravatar id from uer
+    """
+    user = _get_user(user)
+    return gravatar_id_for_email(user.email)
 
 @register.simple_tag
 def gravatar_for_email(email, size=None, rating=None):
