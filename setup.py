@@ -1,5 +1,5 @@
 from distutils.core import setup
- 
+
 setup(
     name='django-gravatar',
     version='0.1.1',

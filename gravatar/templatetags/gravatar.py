@@ -3,9 +3,16 @@ import urllib
 
 from django import template
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.utils.html import smart_urlquote
 from django.utils import simplejson
+
+try:
+    from django.contrib.auth import get_user_model
+except ImportError:
+    def get_user_model():
+        from django.contrib.auth.models import User
+        return User
+
 
 GRAVATAR_URL_PREFIX = getattr(settings, "GRAVATAR_URL_PREFIX",
                                         "http://www.gravatar.com/")
