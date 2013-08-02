@@ -1,14 +1,14 @@
+import hashlib
 import urllib
 
 from django import template
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.utils.hashcompat import md5_constructor
-from django.utils.html import escape
+from django.contrib.auth import get_user_model
+from django.utils.html import smart_urlquote
 from django.utils import simplejson
 
 GRAVATAR_URL_PREFIX = getattr(settings, "GRAVATAR_URL_PREFIX",
-                                      "http://www.gravatar.com/")
+                                        "http://www.gravatar.com/")
 GRAVATAR_DEFAULT_IMAGE = getattr(settings, "GRAVATAR_DEFAULT_IMAGE", "")
 GRAVATAR_DEFAULT_RATING = getattr(settings, "GRAVATAR_DEFAULT_RATING", "g")
 GRAVATAR_DEFAULT_SIZE = getattr(settings, "GRAVATAR_DEFAULT_SIZE", 80)
@@ -25,10 +25,11 @@ def _imgclass_attr():
 
 def _wrap_img_tag(url, info, size):
     return '<img src="%s"%s alt="Avatar for %s" height="%s" width="%s"/>' % \
-            (escape(url), _imgclass_attr(), info, size, size)
+        (smart_urlquote(url), _imgclass_attr(), info, size, size)
 
 
 def _get_user(user):
+    User = get_user_model()
     if not isinstance(user, User):
         try:
             user = User.objects.get(username=user)
@@ -38,7 +39,7 @@ def _get_user(user):
 
 
 def _get_gravatar_id(email):
-    return md5_constructor(email).hexdigest()
+    return hashlib.md5(email.lower()).hexdigest()
 
 @register.simple_tag
 def gravatar_id_for_email(email):
@@ -69,7 +70,7 @@ def gravatar_for_email(email, size=None, rating=None):
         {% gravatar_for_email someone@example.com 48 pg %}
     """
     gravatar_url = "%savatar/%s" % (GRAVATAR_URL_PREFIX,
-            _get_gravatar_id(email))
+                                    _get_gravatar_id(email))
 
     parameters = [p for p in (
         ('d', GRAVATAR_DEFAULT_IMAGE),
@@ -80,7 +81,7 @@ def gravatar_for_email(email, size=None, rating=None):
     if parameters:
         gravatar_url += '?' + urllib.urlencode(parameters, doseq=True)
 
-    return escape(gravatar_url)
+    return smart_urlquote(gravatar_url)
 
 
 @register.simple_tag
@@ -99,6 +100,43 @@ def gravatar_for_user(user, size=None, rating=None):
     """
     user = _get_user(user)
     return gravatar_for_email(user.email, size, rating)
+
+
+@register.simple_tag
+def gravatar_retina_img_for_email(email, size=None, rating=None):
+    """
+    Generates a Gravatar high dpi (retina) img for the given
+    email address.
+
+    Syntax::
+
+        {% gravatar_retina_img_for_email <email> [size] [rating] %}
+
+    Example::
+
+        {% gravatar_retina_img_for_email someone@example.com 48 pg %}
+    """
+    gravatar_url = gravatar_for_email(email, size*2, rating)
+    return _wrap_img_tag(gravatar_url, email, size)
+
+
+@register.simple_tag
+def gravatar_retina_img_for_user(user, size=None, rating=None):
+    """
+    Generates a Gravatar high dpi (retina) img for the given user
+    object or username.
+
+    Syntax::
+
+        {% gravatar_retina_img_for_user <user> [size] [rating] %}
+
+    Example::
+
+        {% gravatar_retina_img_for_user request.user 48 pg %}
+        {% gravatar_retina_img_for_user 'jtauber' 48 pg %}
+    """
+    gravatar_url = gravatar_for_user(user, size*2, rating)
+    return _wrap_img_tag(gravatar_url, user.username, size)
 
 
 @register.simple_tag
